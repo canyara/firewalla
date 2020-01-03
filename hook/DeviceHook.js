@@ -13,7 +13,7 @@
  *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 'use strict';
-
+const _ = require('lodash');
 let log = require('../net2/logger.js')(__filename, 'info');
 
 let Hook = require('./Hook.js');
@@ -161,10 +161,20 @@ class DeviceHook extends Hook {
 
     // DeviceUpdate may be triggered by nmap scan, bonjour monitor,
     // dhcp monitor and etc...
-
+    // @TODO change event.host.intf_mac to intf uuid and save in hostTool.updateMACKey
     sem.on("DeviceUpdate", (event) => {
       let host = event.host
       let mac = host.mac;
+
+      if (_.has(host, 'intf_mac')) {
+        let intfMac = host.intf_mac;
+        let intf = 1; // @TODO get intf uuid accroding to intf_mac
+        delete host.inft_mac;
+        host.intf = intf;
+      }
+
+      // @TEST
+      // host.intf = "osnene-test";
 
       if (mac != null) {
         this.processDeviceUpdate(event)
@@ -583,6 +593,7 @@ class DeviceHook extends Hook {
     return false; // by default return false, a conservative fallback
   }
 
+  // @TODO add p.intf.id according to "DeviceUpdate" host.inft
   createAlarm(host, type) {
     type = type || "new_device";
 
@@ -606,7 +617,8 @@ class DeviceHook extends Hook {
             "p.device.name": name,
             "p.device.ip": host.ipv4Addr || this.getFirstIPv6(host),
             "p.device.mac": host.mac,
-            "p.device.vendor": host.macVendor
+            "p.device.vendor": host.macVendor,
+            "p.intf.id": host.intf ? host.intf : ""
           });
         am2.enqueueAlarm(alarm);
         break;
@@ -618,7 +630,8 @@ class DeviceHook extends Hook {
             "p.device.name": name,
             "p.device.ip": host.ipv4Addr || this.getFirstIPv6(host),
             "p.device.mac": host.mac,
-            "p.device.vendor": host.macVendor
+            "p.device.vendor": host.macVendor,
+            "p.intf.id": host.intf ? host.intf : ""
           });
         am2.enqueueAlarm(alarm);
         break;
@@ -631,7 +644,8 @@ class DeviceHook extends Hook {
             "p.device.ip": host.ipv4Addr || this.getFirstIPv6(host),
             "p.device.mac": host.mac,
             "p.device.vendor": host.macVendor,
-            "p.device.lastSeen": host.lastActiveTimestamp
+            "p.device.lastSeen": host.lastActiveTimestamp,
+            "p.intf.id": host.intf ? host.intf : ""
           });
         am2.enqueueAlarm(alarm);
         break;
@@ -643,7 +657,8 @@ class DeviceHook extends Hook {
             "p.device.name": name,
             "p.device.ip": host.ipv4Addr || this.getFirstIPv6(host),
             "p.device.mac": host.mac,
-            "p.device.vendor": host.macVendor
+            "p.device.vendor": host.macVendor,
+            "p.intf.id": host.intf ? host.intf : ""
           });
         am2.enqueueAlarm(alarm);
         break;

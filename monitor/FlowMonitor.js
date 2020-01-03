@@ -73,7 +73,8 @@ function alarmBootstrap(flow) {
     "p.protocol": flow.pr,
     "p.dest.name": flowUtil.dhnameFlow(flow),
     "p.dest.ip": flow.dh,
-    "p.dest.port": flow.dp
+    "p.dest.port": flow.dp,
+    "p.intf.id": flow.intf
   }
 }
 
@@ -745,7 +746,8 @@ module.exports = class FlowMonitor {
         "p.transfer.inbound.size": copy.rb,
         "p.transfer.duration": copy.du,
         "p.local_is_client": direction == 'in' ? "1" : "0", // connection is initiated from local
-        "p.flow": JSON.stringify(flow)
+        "p.flow": JSON.stringify(flow),
+        "p.intf.id": flow.intf 
       });
 
       // ideally each destination should have a unique ID, now just use hostname as a workaround
@@ -959,7 +961,8 @@ module.exports = class FlowMonitor {
       "r.dest.whois": JSON.stringify(intelObj.whois),
       "e.device.ports": this.getDevicePorts(flowObj),
       "e.dest.ports": this.getRemotePorts(flowObj),
-      "p.from": intelObj.from
+      "p.from": intelObj.from,
+      "p.intf.id": flowObj.intf
     };
 
     this.updateURLPart(alarmPayload, flowObj);
@@ -1038,7 +1041,8 @@ module.exports = class FlowMonitor {
       "p.severity.score": iobj.severityscore,
       "p.from": iobj.from,
       "e.device.ports": this.getDevicePorts(flowObj),
-      "e.dest.ports": this.getRemotePorts(flowObj)
+      "e.dest.ports": this.getRemotePorts(flowObj),
+      "p.intf.id": flowObj.intf
     };
 
     this.updateURLPart(alarmPayload, flowObj);

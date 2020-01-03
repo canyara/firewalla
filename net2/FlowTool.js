@@ -39,31 +39,31 @@ const _ = require('lodash');
 let instance = null;
 class FlowTool {
   constructor() {
-    if(!instance) {
+    if (!instance) {
       instance = this;
     }
     return instance;
   }
 
   trimFlow(flow) {
-    if(!flow)
+    if (!flow)
       return;
 
-    if("flows" in flow)
+    if ("flows" in flow)
       delete flow.flows;
 
-    if("pf" in flow)
+    if ("pf" in flow)
       delete flow.pf;
 
-    if("bl" in flow)
+    if ("bl" in flow)
       delete flow.bl;
 
-    if("af" in flow)
+    if ("af" in flow)
       delete flow.af;
 
-//    if("f" in flow)
-//      delete flow.f;
-    if("uids_array" in flow) {
+    //    if("f" in flow)
+    //      delete flow.f;
+    if ("uids_array" in flow) {
       flow.uids = flow.uids_array.filter((v, i) => {
         return flow.uids_array.indexOf(v) === i;
       });
@@ -127,7 +127,7 @@ class FlowTool {
   _flowStringToJSON(flow) {
     try {
       return JSON.parse(flow);
-    } catch(err) {
+    } catch (err) {
       return null;
     }
   }
@@ -139,7 +139,7 @@ class FlowTool {
       log.error("Host:Flows:Sorting:Parsing", flow);
       return false;
     }
-    if ( !('rb' in o) || !('ob' in o) ) {
+    if (!('rb' in o) || !('ob' in o)) {
       return false
     }
     if (o.rb === 0 && o.ob === 0) {
@@ -200,7 +200,7 @@ class FlowTool {
     let lastFlowObject = null;
 
     flowObjects.forEach((flowObject) => {
-      if(!lastFlowObject) {
+      if (!lastFlowObject) {
         mergedFlowObjects.push(flowObject);
         lastFlowObject = flowObject;
         return;
@@ -223,26 +223,27 @@ class FlowTool {
 
     f.ts = flow.ts;
     f.fd = flow.fd;
-    f.duration = flow.du
+    f.duration = flow.du;
+    f.intf = flow.intf;
 
-    if(flow.mac) {
+    if (flow.mac) {
       f.device = flow.mac;
     }
 
     f.protocol = flow.pr;
 
     try {
-      if(flow.lh === flow.sh) {
+      if (flow.lh === flow.sh) {
         f.port = Number(flow.dp);
         f.devicePort = Number(flow.sp[0]);
       } else {
         f.port = Number(flow.sp[0]);
         f.devicePort = Number(flow.dp);
       }
-    } catch(err) {
+    } catch (err) {
     }
 
-    if(flow.lh === flow.sh) {
+    if (flow.lh === flow.sh) {
       f.ip = flow.dh;
       f.deviceIP = flow.sh;
       f.upload = flow.ob;
@@ -353,7 +354,7 @@ class FlowTool {
     results.forEach((x) => {
       const ts = x.ts;
       const tenminTS = Math.floor(Number(ts) / 600) * 600;
-      if(!aggrResults[tenminTS]) {
+      if (!aggrResults[tenminTS]) {
         aggrResults[tenminTS] = {
           ts: tenminTS,
           ob: x.ob,
@@ -368,10 +369,10 @@ class FlowTool {
         }
       }
     })
-    return Object.values(aggrResults).sort((x,y) => {
-      if(x.ts > y.ts) {
+    return Object.values(aggrResults).sort((x, y) => {
+      if (x.ts > y.ts) {
         return 1;
-      } else if(x.ts === y.ts) {
+      } else if (x.ts === y.ts) {
         return 0;
       } else {
         return -1;
@@ -389,28 +390,28 @@ class FlowTool {
 
     const results = await rclient.zrangebyscoreAsync([key, begin, end]);
 
-    if(results === null || results.length === 0) {
+    if (results === null || results.length === 0) {
       return [];
     }
 
     const list = results
-    .map((jsonString) => {
-      try {
-        return JSON.parse(jsonString);
-      } catch(err) {
-        log.error(`Failed to parse json string: ${jsonString}, err: ${err}`);
-        return null;
-      }
-    })
-    .filter((x) => x !== null)
-    .filter((x) => x.sh === destinationIP || x.dh === destinationIP)
-    .map((x) => {
-      return {
-        ts: x.ts,
-        ob: x.sh === destinationIP ? x.rb : x.ob, // ob stands for number of bytes transferred from local to remote, regardless of flow direction
-        rb: x.sh === destinationIP ? x.ob : x.rb  // rb strands for number of bytes transferred from remote to local, regardless of flow direction
-      }
-    })
+      .map((jsonString) => {
+        try {
+          return JSON.parse(jsonString);
+        } catch (err) {
+          log.error(`Failed to parse json string: ${jsonString}, err: ${err}`);
+          return null;
+        }
+      })
+      .filter((x) => x !== null)
+      .filter((x) => x.sh === destinationIP || x.dh === destinationIP)
+      .map((x) => {
+        return {
+          ts: x.ts,
+          ob: x.sh === destinationIP ? x.rb : x.ob, // ob stands for number of bytes transferred from local to remote, regardless of flow direction
+          rb: x.sh === destinationIP ? x.ob : x.rb  // rb strands for number of bytes transferred from remote to local, regardless of flow direction
+        }
+      })
 
     return list;
   }
@@ -442,7 +443,7 @@ class FlowTool {
     const limit = -1001; // only keep the latest 1000 entries
     let flowCopy = JSON.parse(JSON.stringify(flow));
 
-    if(!this._isFlowValid(flowCopy)) {
+    if (!this._isFlowValid(flowCopy)) {
       return;
     }
 
@@ -468,10 +469,10 @@ class FlowTool {
       if (intel) {
         f.country = intel.country;
         f.host = intel.host;
-        if(intel.category) {
+        if (intel.category) {
           f.category = intel.category
         }
-        if(intel.app) {
+        if (intel.app) {
           f.app = intel.app
         }
       }
@@ -493,18 +494,18 @@ class FlowTool {
     const limit = options.limit || 50;
     let offset = options.offset || "-inf";
 
-    if(offset !== '-inf') {
+    if (offset !== '-inf') {
       offset = `(${offset}`;
     }
 
-    const results = await rclient.zrangebyscoreAsync([key, offset, "+inf", "LIMIT", 0 , limit]);
+    const results = await rclient.zrangebyscoreAsync([key, offset, "+inf", "LIMIT", 0, limit]);
 
-    if(_.isEmpty(results)) {
+    if (_.isEmpty(results)) {
       return [];
     }
 
     let flowObjects = results
-        .map((x) => this._flowStringToJSON(x));
+      .map((x) => this._flowStringToJSON(x));
 
     let enrichedFlows = await this.enrichWithIntel(flowObjects);
 
@@ -531,9 +532,9 @@ class FlowTool {
     }
 
     const zrange = (options.asc ? rclient.zrangebyscoreAsync : rclient.zrevrangebyscoreAsync).bind(rclient);
-    let results = await zrange(key, '(' + ts, ets, "LIMIT", 0 , options.count);
+    let results = await zrange(key, '(' + ts, ets, "LIMIT", 0, options.count);
 
-    if(results === null || results.length === 0)
+    if (results === null || results.length === 0)
       return [];
 
     let flowObjects = results
@@ -547,7 +548,7 @@ class FlowTool {
 
     let mergedFlow = null
 
-    if(!options.no_merge) {
+    if (!options.no_merge) {
       mergedFlow = this._mergeFlows(
         _.orderBy(flowObjects, 'ts', options.asc ? 'asc' : 'desc')
       );
@@ -574,7 +575,7 @@ class FlowTool {
   addFlow(mac, type, flow) {
     let key = this.getFlowKey(mac, type);
 
-    if(typeof flow !== 'object') {
+    if (typeof flow !== 'object') {
       return Promise.reject("Invalid flow type: " + typeof flow);
     }
 
@@ -584,7 +585,7 @@ class FlowTool {
   removeFlow(mac, type, flow) {
     let key = this.getFlowKey(mac, type);
 
-    if(typeof flow !== 'object') {
+    if (typeof flow !== 'object') {
       return Promise.reject("Invalid flow type: " + typeof flow);
     }
 
@@ -617,11 +618,11 @@ class FlowTool {
   }
 
   getDestIP(flow) {
-    if(!flow) {
+    if (!flow) {
       return null
     }
 
-    if(flow.lh === flow.sh) {
+    if (flow.lh === flow.sh) {
       return flow.dh;
     } else {
       return flow.sh;
@@ -629,7 +630,7 @@ class FlowTool {
   }
 
   getDownloadTraffic(flow) {
-    if(flow.lh === flow.sh) {
+    if (flow.lh === flow.sh) {
       return flow.rb;
     } else {
       return flow.ob;
@@ -637,7 +638,7 @@ class FlowTool {
   }
 
   getUploadTraffic(flow) {
-    if(flow.lh === flow.sh) {
+    if (flow.lh === flow.sh) {
       return flow.ob;
     } else {
       return flow.rb;
@@ -645,19 +646,19 @@ class FlowTool {
   }
   getTrafficPort(flow) {
     let port;
-    if(flow.fd == "out"){
+    if (flow.fd == "out") {
       port = flow.sp
-    }else{
+    } else {
       port = flow.dp
     }
-    if(Array.isArray(port)){
+    if (Array.isArray(port)) {
       return port
-    }else{
+    } else {
       return [port]
     }
   }
 }
 
-module.exports = function() {
+module.exports = function () {
   return new FlowTool();
 };
