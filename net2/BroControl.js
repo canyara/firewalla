@@ -37,6 +37,7 @@ class BroControl {
   }
 
   async writeClusterConfig(monitoringInterfaces) {
+    log.info(`writeClusterConfig`, monitoringInterfaces);
     // rewrite cluster node.cfg
     await exec(`sudo cp -f ${f.getFirewallaHome()}/etc/node.cluster.cfg ${PATH_NODE_CFG}`)
 
